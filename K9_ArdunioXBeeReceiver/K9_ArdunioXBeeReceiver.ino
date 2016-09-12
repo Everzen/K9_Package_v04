@@ -15,38 +15,32 @@
 //          - Data Out (DOUT) is connect to Ardunio RX. This is the only attachment. Do not attach TX in this setup, since this stops data somehow working/getting to the serial monitor
 //          - Check Wiring diagram on image in the same folder
 //          - Ardunio has standard 5V USB supply, which also allows the serial monitor to be opened and for the data to be read through. These print statements might be slowing the system.
-
+//
+//IMPLEMENTATION
+//          - Converting this to run DC motors and deciding which way to run them: Forward or in reverse. 
 
 int startbyte;       // start byte, begin reading input
-int servoNumber;
-int servoAngle;
+int motorNumber;
+int motorSpeed;
+int isMotorForward; 
 int i;              // for counting
 int signatureNumber = 255; //Probably change this to 255 when we start sending stuff from Python
 
-//Setup servos
-#include <Servo.h> 
-
-//Create a Servo object for each servo 
-Servo servo7;
-Servo servo8;
-Servo servo9;
-Servo servo10;
-
-// Common servo setup values
-int minPulse = 1500;   // minimum servo position, us (microseconds)
-int maxPulse = 2400;  // maximum servo position, us
+//Adding in definitions to try and 
+#define E1 10  // Enable Pin for motor 1
+#define E2 11  // Enable Pin for motor 2
+ 
+#define I1 8  // Control pin 1 for motor 1
+#define I2 9  // Control pin 2 for motor 1
+#define I3 12  // Control pin 1 for motor 2
+#define I4 13  // Control pin 2 for motor 2
 
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200); //Highest Rate that the XBees can handle - fast enough to handle 2 or 3 channels of continually changing joystick data at least
-
-  // Attach each Servo object to a digital pin
-  servo7.attach(7, minPulse, maxPulse);
-  servo8.attach(8, minPulse, maxPulse);
-  servo9.attach(9, minPulse, maxPulse);
-  servo10.attach(10, minPulse, maxPulse);
-
+  pinMode(motorPinLeft, OUTPUT);
+  pinMode(mortorPinRight, OUTPUT);
 }
 
 void loop() {
@@ -54,34 +48,46 @@ void loop() {
   if (Serial.available() > 2) {   //Wait for there to be 3 items in the buffer
     // Read the first byte
     if (Serial.read() == signatureNumber) {    //Read the first one and make sure that it our special character - by reading it we move one character forward in our serial group of 3 characters
-      Serial.println("We have a start character now read the next two for servo and Angle");  //Character is our signature character so we are good go! 
+      Serial.println("We have a start character now read the next two for motor and speed");  //Character is our signature character so we are good go! 
       for (i=0;i<=1;i++) { //Read the next two characters and process them as the servo number and the servo Angle
         //userInput[i] = Serial.read();   
         if (i == 0) {
-          servoNumber = Serial.read();   //Read the servo number
-          Serial.println("Printing Servo Number:");
-          Serial.println(servoNumber);   //This will print the number relating to the 8 bit ascii character
+          motorNumber = Serial.read();   //Read the servo number
+          Serial.println("Printing Motor Number:");
+          Serial.println(motorNumber);   //This will print the number relating to the 8 bit ascii character
         }
         else if (i == 1) {
-          servoAngle = Serial.read();  //Read the servo Angle
-          Serial.println("Printing Servo Angle:");
-          Serial.println(servoAngle);   //This will print the number relating to the 8 bit ascii character
+          motorSpeed = Serial.read() - 127;  //Read the motorspeed 0-254 and minus 127 from it to get a number balanced around 0. + is forward - is backwards
+          Serial.println("Printing Motor Speed:");
+          Serial.println(motorSpeed);   //This will print the number relating to the 8 bit ascii character
         }  
     
     }
-    //Now that we have established the servo number and angle then use if statement to choose the right servo and move it! 
-    if (servoNumber == 7) {
-      servo7.write(servoAngle);      
-      } // end of servoNumber 7
-    else if (servoNumber == 8){
-      servo8.write(servoAngle); 
-      } // end of servoNumber 8
-    else if (servoNumber == 9){
-      servo9.write(servoAngle); 
-      } // end of servoNumber 9
-    else if (servoNumber == 10){
-      servo10.write(servoAngle); 
-      } // end of servoNumber 10     
+    
+    //Now that we have established the motor number and speed we need to get the speed and say whether we are going forward or backwards
+    if (motorSpeed >= 0) //Motor is driging forward
+      {
+      isMotorForward = 1
+      }
+    else  //Motor is driving backwards
+      {
+      isMotorForward = 0
+      motorspeed = abs(motorspeed)
+      } 
+
+
+    if (motorNumber == 7) {
+      servo7.write(motorSpeed);      
+      } // end of motorNumber 7
+    else if (motorNumber == 8){
+      servo8.write(motorSpeed); 
+      } // end of motorNumber 8
+    else if (motorNumber == 9){
+      servo9.write(motorSpeed); 
+      } // end of motorNumber 9
+    else if (motorNumber == 10){
+      servo10.write(motorSpeed); 
+      } // end of motorNumber 10     
     }
     else {  //The signature character is not correct so print that we are ignoring this character and wait for the buffer to build back to 3 again
       Serial.println("No relevant start character - ignoring"); 

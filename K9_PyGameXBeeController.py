@@ -138,8 +138,8 @@ def mapAxisToTurn(axisValue):
 def speedLimitCheck(speed):
     '''Function to check that the resulting speed after all turn adjustments lands between 0 and 255'''
     finalSpeed = speed
-    if speed > 255:
-        finalSpeed =  255
+    if speed > 254:
+        finalSpeed =  254
     elif speed < 0:
         finalSpeed =  0
     else:
@@ -240,11 +240,11 @@ while done==False:
         #Now that we have calculated the joystick axes then we can send the final motor speeds mapped to 0-255
         
         if motorTurn > 0:
-            finalLeftMotorSpeed = 128*(forwardMotorSpeed) + 127
-            finalRightMotorSpeed = 128*(forwardMotorSpeed * (1 - motorTurn)) + 127
+            finalLeftMotorSpeed = 127*(forwardMotorSpeed) + 127   #Avoide 128 since the 255 number is reserved for the XBee signal Code, so we cannot send it as a motor value
+            finalRightMotorSpeed = 127*(forwardMotorSpeed * (1 - motorTurn)) + 127
         elif motorTurn <= 0:
-            finalLeftMotorSpeed = 128*(forwardMotorSpeed * (1 + motorTurn)) + 127
-            finalRightMotorSpeed = 128*(forwardMotorSpeed) + 127
+            finalLeftMotorSpeed = 127*(forwardMotorSpeed * (1 + motorTurn)) + 127
+            finalRightMotorSpeed = 127*(forwardMotorSpeed) + 127
         
         finalLeftMotorSpeed = int(finalLeftMotorSpeed)
         finalRightMotorSpeed = int(finalRightMotorSpeed)
