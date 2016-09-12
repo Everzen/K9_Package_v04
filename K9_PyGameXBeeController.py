@@ -110,6 +110,8 @@ finalLeftMotorSpeed = 0
 finalRightMotorSpeed = 0
 leftMotorSpeed = 0  #Set inital 0 motoro Speed
 rightMotorSpeed = 0 #Set intial 0 motor Speed
+swivelSpeed = 30 #Set the turn difference for when we swivel on the spot. This accelerates one motor and slows the other
+
 
 motorLeft = MotorSpeedSend(10) #Maps to pin 10
 motorRight = MotorSpeedSend(11) #Maps to pin 11
@@ -238,24 +240,16 @@ while done==False:
         #Now that we have calculated the joystick axes then we can send the final motor speeds mapped to 0-255
         
         if motorTurn > 0:
-            finalLeftMotorSpeed = 128*(forwardMotorSpeed) + 128
-            finalRightMotorSpeed = 128*(forwardMotorSpeed * (1 - motorTurn)) + 128
+            finalLeftMotorSpeed = 128*(forwardMotorSpeed) + 127
+            finalRightMotorSpeed = 128*(forwardMotorSpeed * (1 - motorTurn)) + 127
         elif motorTurn <= 0:
-            finalLeftMotorSpeed = 128*(forwardMotorSpeed * (1 + motorTurn)) + 128
-            finalRightMotorSpeed = 128*(forwardMotorSpeed) + 128
+            finalLeftMotorSpeed = 128*(forwardMotorSpeed * (1 + motorTurn)) + 127
+            finalRightMotorSpeed = 128*(forwardMotorSpeed) + 127
         
         finalLeftMotorSpeed = int(finalLeftMotorSpeed)
         finalRightMotorSpeed = int(finalRightMotorSpeed)
         
-        textPrint.printJoy(screen, ("Motor  Out Loop Speed  : " + str(forwardMotorSpeed)))
-        textPrint.printJoy(screen, ("Turn Value : " + str(motorTurn)))
-        textPrint.printJoy(screen, ("Final Left Motor Speed  : " + str(finalLeftMotorSpeed)))
-        textPrint.printJoy(screen, ("Final Right Motor Speed : " + str(finalRightMotorSpeed)))
 
-        motorLeft.sendSpeed(finalLeftMotorSpeed)
-        motorRight.sendSpeed(finalRightMotorSpeed)
-
-        textPrint.unindent()
             
         buttons = joystick.get_numbuttons()
         #textPrint.printJoy(screen, "Number of buttons: {}".format(buttons) )
@@ -281,11 +275,29 @@ while done==False:
 
         for i in range( hats ):
             hat = joystick.get_hat( i )
-            #textPrint.printJoy(screen, "Hat {} value: {}".format(i, str(hat)) )
+            #print "Hat pressed " + str()
+            textPrint.printJoy(screen, "Hat {} value: {}".format(i, str(hat)) )
+            x,y = hat
+            textPrint.printJoy(screen, "HatX" + str(x))
+            if x == -1: #Left hat button is pressed
+                finalLeftMotorSpeed = speedLimitCheck(finalLeftMotorSpeed - swivelSpeed)
+                finalRightMotorSpeed = speedLimitCheck(finalRightMotorSpeed + swivelSpeed)
+            elif x == 1: #Right hat button is pressed
+                finalLeftMotorSpeed = speedLimitCheck(finalLeftMotorSpeed + swivelSpeed)
+                finalRightMotorSpeed = speedLimitCheck(finalRightMotorSpeed - swivelSpeed)
+
         #textPrint.unindent()
         
         #textPrint.unindent()
+        textPrint.printJoy(screen, ("Motor  Out Loop Speed  : " + str(forwardMotorSpeed)))
+        textPrint.printJoy(screen, ("Turn Value : " + str(motorTurn)))
+        textPrint.printJoy(screen, ("Final Left Motor Speed  : " + str(finalLeftMotorSpeed)))
+        textPrint.printJoy(screen, ("Final Right Motor Speed : " + str(finalRightMotorSpeed)))
 
+        motorLeft.sendSpeed(finalLeftMotorSpeed)
+        motorRight.sendSpeed(finalRightMotorSpeed)
+
+        textPrint.unindent()
 
     
     # ALL CODE TO DRAW SHOULD GO ABOVE THIS COMMENT
