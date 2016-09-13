@@ -27,8 +27,8 @@ int i;              // for counting
 int signatureNumber = 255; //Probably change this to 255 when we start sending stuff from Python
 
 //Adding in definitions to try and 
-#define E1 10  // Enable Pin for motor 1
-#define E2 11  // Enable Pin for motor 2
+#define motorPinLeft 10  // Enable Pin for motor 1
+#define motorPinRight 11  // Enable Pin for motor 2
  
 #define I1 8  // Control pin 1 for motor 1
 #define I2 9  // Control pin 2 for motor 1
@@ -41,6 +41,12 @@ void setup() {
   Serial.begin(115200); //Highest Rate that the XBees can handle - fast enough to handle 2 or 3 channels of continually changing joystick data at least
   pinMode(motorPinLeft, OUTPUT);
   pinMode(mortorPinRight, OUTPUT);
+
+  pinMode(I1, OUTPUT);
+  pinMode(I2, OUTPUT);
+  pinMode(I3, OUTPUT);
+  pinMode(I4, OUTPUT);
+
 }
 
 void loop() {
@@ -75,24 +81,35 @@ void loop() {
       motorspeed = abs(motorspeed)
       } 
 
-
-    if (motorNumber == 7) {
-      servo7.write(motorSpeed);      
-      } // end of motorNumber 7
-    else if (motorNumber == 8){
-      servo8.write(motorSpeed); 
-      } // end of motorNumber 8
-    else if (motorNumber == 9){
-      servo9.write(motorSpeed); 
-      } // end of motorNumber 9
-    else if (motorNumber == 10){
-      servo10.write(motorSpeed); 
-      } // end of motorNumber 10     
-    }
-    else {  //The signature character is not correct so print that we are ignoring this character and wait for the buffer to build back to 3 again
-      Serial.println("No relevant start character - ignoring"); 
+    if (motorNumber == motorPinLeft) { //We are dealing with the left Motor
+      if (isMotorForward == 1) { //Set lft motor to go forward
+        digitalWrite(I1, HIGH);
+        digitalWrite(I2, LOW);
       }
-    }// End of serial available
+      else if (isMotorForward == 0) { //Set left motor to go backward
+        digitalWrite(I1, HIGH);
+        digitalWrite(I2, LOW);
+      }
+    //Now set the Motor Speed
+    analogWrite(motorPinLeft, motorSpeed); // Run in half speed
+    }
+    else if (motorNumber == motorPinRight) { //We are dealing with the right Motor
+      if (isMotorForward == 1) { //Set right motor to go forward
+        digitalWrite(I3, HIGH);
+        digitalWrite(I4, LOW);
+      }
+      else if (isMotorForward == 0) { //Set right motor to go backward
+        digitalWrite(I3, HIGH);
+        digitalWrite(I4, LOW);
+      }
+    //Now set the Motor Speed
+    analogWrite(motorPinRight, motorSpeed); // Run in half speed
+    }
+    
+   } //End of signatureNumber check
+   else {  //The signature character is not correct so print that we are ignoring this character and wait for the buffer to build back to 3 again
+      Serial.println("No relevant start character - ignoring"); 
+   }
    } // End of Loop 
 
   
