@@ -40,7 +40,7 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200); //Highest Rate that the XBees can handle - fast enough to handle 2 or 3 channels of continually changing joystick data at least
   pinMode(motorPinLeft, OUTPUT);
-  pinMode(mortorPinRight, OUTPUT);
+  pinMode(motorPinRight, OUTPUT);
 
   pinMode(I1, OUTPUT);
   pinMode(I2, OUTPUT);
@@ -73,18 +73,18 @@ void loop() {
     //Now that we have established the motor number and speed we need to get the speed and say whether we are going forward or backwards
     if (motorSpeed >= 0) //Motor is driging forward
       {
-      isMotorForward = 1
+      isMotorForward = 1;
       }
     else  //Motor is driving backwards
       {
-      isMotorForward = 0
-      motorspeed = abs(motorspeed)
+      isMotorForward = 0;
+      motorSpeed = abs(motorSpeed);
       } 
 
     if (motorNumber == motorPinLeft) { //We are dealing with the left Motor
       if (isMotorForward == 1) { //Set lft motor to go forward
-        digitalWrite(I1, HIGH);
-        digitalWrite(I2, LOW);
+        digitalWrite(I1, LOW);
+        digitalWrite(I2, HIGH);
       }
       else if (isMotorForward == 0) { //Set left motor to go backward
         digitalWrite(I1, HIGH);
@@ -99,8 +99,8 @@ void loop() {
         digitalWrite(I4, LOW);
       }
       else if (isMotorForward == 0) { //Set right motor to go backward
-        digitalWrite(I3, HIGH);
-        digitalWrite(I4, LOW);
+        digitalWrite(I3, LOW);
+        digitalWrite(I4, HIGH);
       }
     //Now set the Motor Speed
     analogWrite(motorPinRight, motorSpeed); // Run in half speed
@@ -110,6 +110,7 @@ void loop() {
    else {  //The signature character is not correct so print that we are ignoring this character and wait for the buffer to build back to 3 again
       Serial.println("No relevant start character - ignoring"); 
    }
+   } // End of Serial > 2 check 
    } // End of Loop 
 
   

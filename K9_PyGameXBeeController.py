@@ -6,7 +6,6 @@
 #Use extended asci tables to convert data
 
 #This setup is verbose, but the print statements at the python end do not really result in a lag to the system.
-#From this template create as many instances of "ServoSend(1,8)" as needed and map them out the servos required at the ardunio end
 
 ###############################################################################
 ##Receiver Ardunio should be running the "K9_ArdunioXBeeReceiver.ino" sketch.
@@ -14,7 +13,7 @@
 ##########################################################################
 ##TO DO:
 ##      - Currently reporting ardunio number in servo send which is not needed. Just use the servo number with if statements at the Ardunio end to map commands out to the write pins/operations
-##      - Clean up this code to remove a lot of the joystick testing statements - However, currently speed issues are not down to this code
+##      - Clean up a bit more joystick code
 
 #################################################
 ##SETUP
@@ -22,6 +21,17 @@
 ##      - 'xBeeCoordinator' - refers to the com port that the PC attached XBee is connected to. The one that should send out all the signals
 ##      - We want to send as little data as possible, so lets work out motor speeds here, and just send the two motor speeds, so the ardunio does not have to do many calculations
 ##  
+
+#################################################
+##IMPLEMENTED
+##      - Motor Code is now implemented and tweaked to run practically with a wire setup. 
+##      - Voltages of around 8V produce a steady decent Motor Speed
+##      - On the Spot Turn Implemented by using the joystick hat. Can adjust the speed of the on the spot turn using swivelSpeed
+
+#################################################
+##PHYSICAL TO DO
+##      - Need to solder wire to additional DC motors in parallel to the current Setup - A tank track build might be preferable because different motor speeds on the same side would produce problems. Test Any way
+##      - Test Motor supply from a LIPO battery
 
 
 import pygame
@@ -110,7 +120,7 @@ finalLeftMotorSpeed = 0
 finalRightMotorSpeed = 0
 leftMotorSpeed = 0  #Set inital 0 motoro Speed
 rightMotorSpeed = 0 #Set intial 0 motor Speed
-swivelSpeed = 30 #Set the turn difference for when we swivel on the spot. This accelerates one motor and slows the other
+swivelSpeed = 60 #Set the turn difference for when we swivel on the spot. This accelerates one motor and slows the other
 
 
 motorLeft = MotorSpeedSend(10) #Maps to pin 10
