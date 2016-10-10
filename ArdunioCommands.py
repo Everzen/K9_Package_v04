@@ -24,7 +24,7 @@ class MotorSpeedSend(object):
             speed
               the desired motor speed to change to an integer from 0 to 255'''
         finalSpeed = self.speedLimitCheck(speed)
-        print "About to send 255"
+        print "\nAbout to send 255"
         self.serial.write(chr(255))
         print "Sending Motor Number"
         self.serial.write(chr(self.motorNumber))

@@ -51,7 +51,58 @@ ser = serial.Serial(xBeeCoordinator, 115200, timeout=1)
 BLACK    = (   0,   0,   0)
 WHITE    = ( 255, 255, 255)
 
-print "Initiated Stage: 1"
+
+###############################################OSC CODE###########################
+
+import socket, OSC, re, time, threading, math
+
+receive_address = '192.168.0.81', 8000 #Mac Adress, Outgoing Port
+send_address = '192.168.0.3', 9000 #iPhone Adress, Incoming Port
+
+servoAngle = 0
+
+##########################
+#   OSC
+##########################
+
+# Initialize the OSC server and the client.
+s = OSC.OSCServer(receive_address)
+c = OSC.OSCClient()
+c.connect(send_address)
+
+s.addDefaultHandlers()
+
+###################################################################################
+
+def make_handler(pinNumber):
+    def moveSlider_handler(addr, tags, stuff, source):
+        print "message received:"
+        msg = OSC.OSCMessage()
+        msg.setAddress(addr)
+        msg.append(stuff)
+        c.send(msg)
+        print "X Value is: " 
+        print stuff[0] 
+        #sendToServo(pinNumber, stuff[0])
+
+    return moveSlider_handler
+
+#Setup OSC message handlers for the correct pins
+s.addMsgHandler("/1/fader4", make_handler(8))  #"/1/fader4" - is hardcoded name for ui element in TOUCH OSC App running on Tablet
+s.addMsgHandler("/1/fader3", make_handler(7))
+
+###################################################################################
+
+
+print "Initiising Tablet OSC Control"
+
+# Start OSCServer
+print "\nStarting OSCServer...."
+st = threading.Thread( target = s.serve_forever )
+st.start()
+#s.serve_forever()
+
+
 # This is a simple class that will help us print to the screen
 # It has nothing to do with the joysticks, just outputing the
 # information.
@@ -172,7 +223,7 @@ while done==False:
     
         # Get the name from the OS for the controller/joystick
         name = joystick.get_name()
-        textPrint.printJoy(screen, "Joystick name: {}".format(name) )
+        #textPrint.printJoy(screen, "Joystick name: {}".format(name) )
         
         # Usually axis run in pairs, up/down for one, and left/right for
         # the other.
@@ -261,8 +312,10 @@ while done==False:
         textPrint.unindent()
 
     
+    #s.handle_request() #Handle OSC server request
     # ALL CODE TO DRAW SHOULD GO ABOVE THIS COMMENT
     
+
     # Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
 
