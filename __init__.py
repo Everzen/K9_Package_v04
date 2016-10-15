@@ -34,12 +34,14 @@
 ##      - Test Motor supply from a LIPO battery
 
 
-import pygame
-import serial
-import math
+import pygame, serial, math, threading
+
 
 import ArdunioCommands
 
+
+#Setup Global Lock, so that data between the Joystick and the Tablet OSC data can be coordinated in to grouped messages, without mashing/overlapping eachother. 
+lock = threading.Lock()
 
 #Define Serial Setup
 xBeeCoordinator = 'COM9' #Comport for Arduino - Adapt it we end up sending data via blue tooth
@@ -52,9 +54,10 @@ BLACK    = (   0,   0,   0)
 WHITE    = ( 255, 255, 255)
 
 
+
 ###############################################OSC CODE###########################
 
-import socket, OSC, re, time, threading, math
+import socket, OSC, re, time
 
 receive_address = '192.168.0.81', 8000 #Mac Adress, Outgoing Port
 send_address = '192.168.0.3', 9000 #iPhone Adress, Incoming Port
@@ -76,14 +79,15 @@ s.addDefaultHandlers()
 
 def make_handler(pinNumber):
     def moveSlider_handler(addr, tags, stuff, source):
-        print "message received:"
         msg = OSC.OSCMessage()
         msg.setAddress(addr)
         msg.append(stuff)
         c.send(msg)
-        print "X Value is: " 
-        print stuff[0] 
-        #sendToServo(pinNumber, stuff[0])
+        with lock:
+            print "\nOSC Message received:"
+            print "X Value is: " 
+            print stuff[0] 
+            #sendToServo(pinNumber, stuff[0])
 
     return moveSlider_handler
 
@@ -298,16 +302,16 @@ while done==False:
                 finalLeftMotorSpeed = finalLeftMotorSpeed + swivelSpeed
                 finalRightMotorSpeed = finalRightMotorSpeed - swivelSpeed
 
-        #textPrint.unindent()
-        
-        #textPrint.unindent()
-        textPrint.printJoy(screen, ("Motor  Out Loop Speed  : " + str(forwardMotorSpeed)))
-        textPrint.printJoy(screen, ("Turn Value : " + str(motorTurn)))
-        textPrint.printJoy(screen, ("Final Left Motor Speed  : " + str(finalLeftMotorSpeed)))
-        textPrint.printJoy(screen, ("Final Right Motor Speed : " + str(finalRightMotorSpeed)))
 
-        motorLeft.sendSpeed(finalLeftMotorSpeed)
-        motorRight.sendSpeed(finalRightMotorSpeed)
+        with lock:  #acquire the lock to make sure that we 
+            #Debugging data printing 
+            textPrint.printJoy(screen, ("Motor  Out Loop Speed  : " + str(forwardMotorSpeed)))
+            textPrint.printJoy(screen, ("Turn Value : " + str(motorTurn)))
+            textPrint.printJoy(screen, ("Final Left Motor Speed  : " + str(finalLeftMotorSpeed)))
+            textPrint.printJoy(screen, ("Final Right Motor Speed : " + str(finalRightMotorSpeed)))
+            #Now send actual Motor Values through the XBee
+            motorLeft.sendSpeed(finalLeftMotorSpeed)
+            motorRight.sendSpeed(finalRightMotorSpeed)
 
         textPrint.unindent()
 
